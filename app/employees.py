@@ -9,6 +9,7 @@ from app.database import get_db
 from app.models import Employee, User
 from app.schemas import EmployeeCreate, EmployeeUpdate, EmployeeResponse
 from app.auth import get_current_active_user
+from app.utils import validate_uuid
 
 router = APIRouter()
 
@@ -32,15 +33,18 @@ async def get_employees(
 
 @router.get("/{emp_id}", response_model=EmployeeResponse, summary="Get employee by ID")
 async def get_employee(
-    emp_id: int,
+    emp_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Retrieve a specific employee by their ID.
     
-    - **emp_id**: The ID of the employee to retrieve
+    - **emp_id**: The UUID of the employee to retrieve
     """
+    # Validate UUID format
+    validate_uuid(emp_id)
+    
     employee = db.query(Employee).filter(Employee.emp_id == emp_id).first()
     if employee is None:
         raise HTTPException(status_code=404, detail="Employee not found")
@@ -79,7 +83,7 @@ async def create_employee(
 
 @router.put("/{emp_id}", response_model=EmployeeResponse, summary="Update an employee")
 async def update_employee(
-    emp_id: int,
+    emp_id: str,
     employee: EmployeeUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
@@ -87,11 +91,14 @@ async def update_employee(
     """
     Update an existing employee.
     
-    - **emp_id**: The ID of the employee to update
+    - **emp_id**: The UUID of the employee to update
     - **first_name**: Employee's first name
     - **last_name**: Employee's last name
-    - **position_id**: ID of the position for this employee
+    - **position_id**: UUID of the position for this employee
     """
+    # Validate UUID format
+    validate_uuid(emp_id)
+    
     db_employee = db.query(Employee).filter(Employee.emp_id == emp_id).first()
     if db_employee is None:
         raise HTTPException(status_code=404, detail="Employee not found")
@@ -113,15 +120,18 @@ async def update_employee(
 
 @router.delete("/{emp_id}", summary="Delete an employee")
 async def delete_employee(
-    emp_id: int,
+    emp_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Delete an employee by their ID.
     
-    - **emp_id**: The ID of the employee to delete
+    - **emp_id**: The UUID of the employee to delete
     """
+    # Validate UUID format
+    validate_uuid(emp_id)
+    
     db_employee = db.query(Employee).filter(Employee.emp_id == emp_id).first()
     if db_employee is None:
         raise HTTPException(status_code=404, detail="Employee not found")

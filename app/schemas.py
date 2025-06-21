@@ -1,8 +1,9 @@
 """
 Pydantic schemas for request/response validation
 """
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
+from app.utils import validate_uuid
 
 
 # User schemas
@@ -16,8 +17,13 @@ class UserCreate(UserBase):
 
 
 class UserResponse(UserBase):
-    user_id: int
+    user_id: str
     is_active: bool
+
+    @field_validator('user_id')
+    @classmethod
+    def validate_user_id(cls, v):
+        return validate_uuid(v)
 
     class Config:
         from_attributes = True
@@ -54,7 +60,12 @@ class PositionUpdate(PositionBase):
 
 
 class PositionResponse(PositionBase):
-    position_id: int
+    position_id: str
+
+    @field_validator('position_id')
+    @classmethod
+    def validate_position_id(cls, v):
+        return validate_uuid(v)
 
     class Config:
         from_attributes = True
@@ -64,7 +75,12 @@ class PositionResponse(PositionBase):
 class EmployeeBase(BaseModel):
     first_name: str
     last_name: str
-    position_id: int
+    position_id: str
+
+    @field_validator('position_id')
+    @classmethod
+    def validate_position_id(cls, v):
+        return validate_uuid(v)
 
 
 class EmployeeCreate(EmployeeBase):
@@ -76,8 +92,13 @@ class EmployeeUpdate(EmployeeBase):
 
 
 class EmployeeResponse(EmployeeBase):
-    emp_id: int
+    emp_id: str
     position: Optional[PositionResponse] = None
+
+    @field_validator('emp_id')
+    @classmethod
+    def validate_emp_id(cls, v):
+        return validate_uuid(v)
 
     class Config:
         from_attributes = True

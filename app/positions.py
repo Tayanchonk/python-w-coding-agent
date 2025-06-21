@@ -9,6 +9,7 @@ from app.database import get_db
 from app.models import Position, User
 from app.schemas import PositionCreate, PositionUpdate, PositionResponse
 from app.auth import get_current_active_user
+from app.utils import validate_uuid
 
 router = APIRouter()
 
@@ -32,15 +33,18 @@ async def get_positions(
 
 @router.get("/{position_id}", response_model=PositionResponse, summary="Get position by ID")
 async def get_position(
-    position_id: int,
+    position_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Retrieve a specific position by its ID.
     
-    - **position_id**: The ID of the position to retrieve
+    - **position_id**: The UUID of the position to retrieve
     """
+    # Validate UUID format
+    validate_uuid(position_id)
+    
     position = db.query(Position).filter(Position.position_id == position_id).first()
     if position is None:
         raise HTTPException(status_code=404, detail="Position not found")
@@ -71,7 +75,7 @@ async def create_position(
 
 @router.put("/{position_id}", response_model=PositionResponse, summary="Update a position")
 async def update_position(
-    position_id: int,
+    position_id: str,
     position: PositionUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
@@ -79,10 +83,13 @@ async def update_position(
     """
     Update an existing position.
     
-    - **position_id**: The ID of the position to update
+    - **position_id**: The UUID of the position to update
     - **position_name**: Name of the position
     - **description**: Optional description of the position
     """
+    # Validate UUID format
+    validate_uuid(position_id)
+    
     db_position = db.query(Position).filter(Position.position_id == position_id).first()
     if db_position is None:
         raise HTTPException(status_code=404, detail="Position not found")
@@ -97,15 +104,18 @@ async def update_position(
 
 @router.delete("/{position_id}", summary="Delete a position")
 async def delete_position(
-    position_id: int,
+    position_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Delete a position by its ID.
     
-    - **position_id**: The ID of the position to delete
+    - **position_id**: The UUID of the position to delete
     """
+    # Validate UUID format
+    validate_uuid(position_id)
+    
     db_position = db.query(Position).filter(Position.position_id == position_id).first()
     if db_position is None:
         raise HTTPException(status_code=404, detail="Position not found")
