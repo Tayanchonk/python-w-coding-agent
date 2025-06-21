@@ -13,6 +13,7 @@ from app.main import app
 from app.database import get_db, Base
 from app.models import User, Position, Employee
 from app.auth import get_password_hash
+from app.utils import generate_uuid, is_valid_uuid
 
 # Create test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -53,12 +54,13 @@ def setup_database():
     )
     db.add(test_position)
     db.commit()
+    db.refresh(test_position)  # Get the generated UUID
     
-    # Add test employee
+    # Add test employee using the position UUID
     test_employee = Employee(
         first_name="Test",
         last_name="Employee",
-        position_id=1
+        position_id=test_position.position_id
     )
     db.add(test_employee)
     db.commit()
@@ -95,6 +97,7 @@ class TestAuthentication:
         data = response.json()
         assert data["username"] == "newuser"
         assert data["email"] == "new@example.com"
+        assert is_valid_uuid(data["user_id"])
     
     def test_login(self, setup_database):
         """Test user login"""
@@ -129,30 +132,56 @@ class TestEmployees:
         data = response.json()
         assert isinstance(data, list)
         assert len(data) >= 1
+        # Verify that employee IDs are UUIDs
+        for employee in data:
+            assert is_valid_uuid(employee["emp_id"])
+            assert is_valid_uuid(employee["position_id"])
     
     def test_get_employee_by_id(self, setup_database):
         """Test getting employee by ID"""
         token = get_auth_token()
         headers = {"Authorization": f"Bearer {token}"}
-        response = client.get("/employees/1", headers=headers)
+        
+        # First get all employees to find a valid UUID
+        response = client.get("/employees/", headers=headers)
+        assert response.status_code == 200
+        employees = response.json()
+        assert len(employees) > 0
+        
+        emp_id = employees[0]["emp_id"]
+        
+        # Now get the specific employee
+        response = client.get(f"/employees/{emp_id}", headers=headers)
         assert response.status_code == 200
         data = response.json()
-        assert data["emp_id"] == 1
+        assert data["emp_id"] == emp_id
         assert data["first_name"] == "Test"
+        assert is_valid_uuid(data["emp_id"])
     
     def test_create_employee(self, setup_database):
         """Test creating a new employee"""
         token = get_auth_token()
         headers = {"Authorization": f"Bearer {token}"}
+        
+        # First get a valid position ID
+        response = client.get("/positions/", headers=headers)
+        assert response.status_code == 200
+        positions = response.json()
+        assert len(positions) > 0
+        position_id = positions[0]["position_id"]
+        
+        # Create employee with valid position UUID
         response = client.post("/employees/", headers=headers, json={
             "first_name": "New",
             "last_name": "Employee",
-            "position_id": 1
+            "position_id": position_id
         })
         assert response.status_code == 200
         data = response.json()
         assert data["first_name"] == "New"
         assert data["last_name"] == "Employee"
+        assert is_valid_uuid(data["emp_id"])
+        assert data["position_id"] == position_id
     
     def test_unauthorized_access(self, setup_database):
         """Test unauthorized access to employees"""
@@ -172,6 +201,9 @@ class TestPositions:
         data = response.json()
         assert isinstance(data, list)
         assert len(data) >= 1
+        # Verify that position IDs are UUIDs
+        for position in data:
+            assert is_valid_uuid(position["position_id"])
     
     def test_create_position(self, setup_database):
         """Test creating a new position"""
@@ -184,6 +216,7 @@ class TestPositions:
         assert response.status_code == 200
         data = response.json()
         assert data["position_name"] == "New Position"
+        assert is_valid_uuid(data["position_id"])
 
 
 class TestAPIHealth:

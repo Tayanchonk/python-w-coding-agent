@@ -70,27 +70,31 @@ def init_db():
         
         db.commit()
         
-        # Create sample employees
+        # Refresh to get the generated UUIDs
+        for position in sample_positions:
+            db.refresh(position)
+        
+        # Create sample employees using actual position UUIDs
         sample_employees = [
             Employee(
                 first_name="John",
                 last_name="Doe",
-                position_id=1
+                position_id=sample_positions[0].position_id
             ),
             Employee(
                 first_name="Jane",
                 last_name="Smith",
-                position_id=2
+                position_id=sample_positions[1].position_id
             ),
             Employee(
                 first_name="Mike",
                 last_name="Johnson",
-                position_id=1
+                position_id=sample_positions[0].position_id
             ),
             Employee(
                 first_name="Sarah",
                 last_name="Wilson",
-                position_id=3
+                position_id=sample_positions[2].position_id
             )
         ]
         

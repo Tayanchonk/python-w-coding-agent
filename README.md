@@ -7,6 +7,7 @@ A Python-based CRUD API for employee management with JWT authentication built us
 - **Authentication**: JWT token-based authentication with login, register, and refresh endpoints
 - **Employee Management**: Full CRUD operations for employees
 - **Position Management**: Full CRUD operations for job positions
+- **UUID Support**: All entities use UUIDs (Globally Unique Identifiers) for enhanced security and distributed system compatibility
 - **Database**: SQLite database with proper relationships
 - **Documentation**: Auto-generated Swagger UI documentation
 - **Testing**: Comprehensive test suite using pytest
@@ -19,6 +20,7 @@ A Python-based CRUD API for employee management with JWT authentication built us
 - **JWT**: JSON Web Tokens for authentication
 - **Pydantic**: Data validation using Python type annotations
 - **Uvicorn**: ASGI server for running the application
+- **UUID**: Universal Unique Identifiers for all entity IDs
 
 ## Installation
 
@@ -52,23 +54,25 @@ The API will be available at `http://localhost:8000`
 
 ## Database Schema
 
+**Note**: All ID fields use UUID (Globally Unique Identifier) format for enhanced security and distributed system compatibility.
+
 ### Users Table
-- `user_id` (Primary Key)
+- `user_id` (Primary Key - UUID)
 - `username` (Unique)
 - `email` (Unique)
 - `password` (Hashed)
 - `is_active` (Boolean)
 
 ### Positions Table
-- `position_id` (Primary Key)
+- `position_id` (Primary Key - UUID)
 - `position_name`
 - `description` (Optional)
 
 ### Employees Table
-- `emp_id` (Primary Key)
+- `emp_id` (Primary Key - UUID)
 - `first_name`
 - `last_name`
-- `position_id` (Foreign Key to Positions)
+- `position_id` (Foreign Key to Positions - UUID)
 
 ## Sample Credentials
 
@@ -95,7 +99,7 @@ curl -X POST "http://localhost:8000/auth/register" \
 **Response:**
 ```json
 {
-  "user_id": 3,
+  "user_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
   "username": "newuser",
   "email": "newuser@example.com",
   "is_active": true
@@ -141,12 +145,12 @@ curl -X GET "http://localhost:8000/employees/" \
 ```json
 [
   {
-    "emp_id": 1,
+    "emp_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     "first_name": "John",
     "last_name": "Doe",
-    "position_id": 1,
+    "position_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
     "position": {
-      "position_id": 1,
+      "position_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
       "position_name": "Software Engineer",
       "description": "Develops and maintains software applications"
     }
@@ -156,7 +160,7 @@ curl -X GET "http://localhost:8000/employees/" \
 
 #### Get Employee by ID
 ```bash
-curl -X GET "http://localhost:8000/employees/1" \
+curl -X GET "http://localhost:8000/employees/f47ac10b-58cc-4372-a567-0e02b2c3d479" \
      -H "Authorization: Bearer <access_token>"
 ```
 
@@ -168,19 +172,19 @@ curl -X POST "http://localhost:8000/employees/" \
      -d '{
        "first_name": "Alice",
        "last_name": "Brown",
-       "position_id": 2
+       "position_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8"
      }'
 ```
 
 **Response:**
 ```json
 {
-  "emp_id": 5,
+  "emp_id": "550e8400-e29b-41d4-a716-446655440000",
   "first_name": "Alice",
   "last_name": "Brown",
-  "position_id": 2,
+  "position_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
   "position": {
-    "position_id": 2,
+    "position_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
     "position_name": "Product Manager",
     "description": "Manages product development and strategy"
   }
@@ -189,19 +193,19 @@ curl -X POST "http://localhost:8000/employees/" \
 
 #### Update Employee
 ```bash
-curl -X PUT "http://localhost:8000/employees/1" \
+curl -X PUT "http://localhost:8000/employees/f47ac10b-58cc-4372-a567-0e02b2c3d479" \
      -H "Authorization: Bearer <access_token>" \
      -H "Content-Type: application/json" \
      -d '{
        "first_name": "John",
        "last_name": "Smith",
-       "position_id": 2
+       "position_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8"
      }'
 ```
 
 #### Delete Employee
 ```bash
-curl -X DELETE "http://localhost:8000/employees/1" \
+curl -X DELETE "http://localhost:8000/employees/f47ac10b-58cc-4372-a567-0e02b2c3d479" \
      -H "Authorization: Bearer <access_token>"
 ```
 
@@ -224,7 +228,7 @@ curl -X GET "http://localhost:8000/positions/" \
 ```json
 [
   {
-    "position_id": 1,
+    "position_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
     "position_name": "Software Engineer",
     "description": "Develops and maintains software applications"
   }
@@ -233,7 +237,7 @@ curl -X GET "http://localhost:8000/positions/" \
 
 #### Get Position by ID
 ```bash
-curl -X GET "http://localhost:8000/positions/1" \
+curl -X GET "http://localhost:8000/positions/6ba7b810-9dad-11d1-80b4-00c04fd430c8" \
      -H "Authorization: Bearer <access_token>"
 ```
 
@@ -251,7 +255,7 @@ curl -X POST "http://localhost:8000/positions/" \
 **Response:**
 ```json
 {
-  "position_id": 5,
+  "position_id": "123e4567-e89b-12d3-a456-426614174000",
   "position_name": "UI/UX Designer",
   "description": "Designs user interfaces and experiences"
 }
@@ -259,7 +263,7 @@ curl -X POST "http://localhost:8000/positions/" \
 
 #### Update Position
 ```bash
-curl -X PUT "http://localhost:8000/positions/1" \
+curl -X PUT "http://localhost:8000/positions/6ba7b810-9dad-11d1-80b4-00c04fd430c8" \
      -H "Authorization: Bearer <access_token>" \
      -H "Content-Type: application/json" \
      -d '{
