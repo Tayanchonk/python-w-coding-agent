@@ -60,7 +60,7 @@ async def create_position(
     - **description**: Optional description of the position
     """
     db_position = Position(
-        position_name=position.position_name,
+        name=position.name,
         description=position.description
     )
     db.add(db_position)

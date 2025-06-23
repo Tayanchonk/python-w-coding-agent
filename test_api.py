@@ -15,7 +15,8 @@ from app.models import User, Position, Employee
 from app.auth import get_password_hash
 
 # Create test database
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+TEST_DB_FD, TEST_DB_PATH = tempfile.mkstemp(suffix='.db')
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{TEST_DB_PATH}"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -40,7 +41,7 @@ def setup_database():
     # Add test user
     test_user = User(
         username="testuser",
-        email="test@example.com",
+        email="testuser@example.com",
         password_hash=get_password_hash("testpass"),
         is_active=True
     )
@@ -68,8 +69,16 @@ def setup_database():
     
     # Cleanup
     Base.metadata.drop_all(bind=engine)
-    if os.path.exists("test.db"):
-        os.remove("test.db")
+    db.close()
+    try:
+        os.close(TEST_DB_FD)
+    except Exception:
+        pass
+    try:
+        if os.path.exists(TEST_DB_PATH):
+            os.remove(TEST_DB_PATH)
+    except Exception:
+        pass
 
 
 def get_auth_token():
@@ -134,26 +143,34 @@ class TestEmployees:
         """Test getting employee by ID"""
         token = get_auth_token()
         headers = {"Authorization": f"Bearer {token}"}
-        response = client.get("/employees/1", headers=headers)
+        # ใช้ UUID ของ test_employee ที่สร้างใน setup_database
+        from app.database import get_db
+        db = next(override_get_db())
+        employee = db.query(Employee).filter(Employee.first_name=="Test").first()
+        response = client.get(f"/employees/{employee.id}", headers=headers)
         assert response.status_code == 200
         data = response.json()
-        assert data["emp_id"] == 1
+        assert data["id"] == str(employee.id)
         assert data["first_name"] == "Test"
-    
+
     def test_create_employee(self, setup_database):
         """Test creating a new employee"""
         token = get_auth_token()
         headers = {"Authorization": f"Bearer {token}"}
+        # ต้องใช้ position_id เป็น UUID string
+        from app.database import get_db
+        db = next(override_get_db())
+        position = db.query(Position).first()
         response = client.post("/employees/", headers=headers, json={
             "first_name": "New",
             "last_name": "Employee",
-            "position_id": 1
+            "position_id": str(position.id)
         })
         assert response.status_code == 200
         data = response.json()
         assert data["first_name"] == "New"
         assert data["last_name"] == "Employee"
-    
+
     def test_unauthorized_access(self, setup_database):
         """Test unauthorized access to employees"""
         response = client.get("/employees/")
@@ -178,12 +195,12 @@ class TestPositions:
         token = get_auth_token()
         headers = {"Authorization": f"Bearer {token}"}
         response = client.post("/positions/", headers=headers, json={
-            "position_name": "New Position",
+            "name": "New Position",
             "description": "A new test position"
         })
         assert response.status_code == 200
         data = response.json()
-        assert data["position_name"] == "New Position"
+        assert data["name"] == "New Position"
 
 
 class TestAPIHealth:

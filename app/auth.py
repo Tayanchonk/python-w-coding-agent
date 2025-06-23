@@ -78,7 +78,7 @@ def create_user(db: Session, user: UserCreate):
     db_user = User(
         username=user.username,
         email=user.email,
-        password=hashed_password
+        password_hash=hashed_password
     )
     db.add(db_user)
     db.commit()
@@ -91,7 +91,7 @@ def authenticate_user(db: Session, username: str, password: str):
     user = get_user_by_username(db, username)
     if not user:
         return False
-    if not verify_password(password, user.password):
+    if not verify_password(password, user.password_hash):
         return False
     return user
 
