@@ -38,6 +38,8 @@ pip install -r requirements.txt
 python init_db.py
 ```
 
+**Note**: If you get `ModuleNotFoundError` when running `init_db.py`, make sure you have installed all dependencies from step 2.
+
 4. Run the application:
 ```bash
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -370,6 +372,36 @@ Before deploying to production:
 5. Set up proper logging
 6. Configure HTTPS
 7. Set appropriate token expiration times
+
+## Troubleshooting
+
+### Common Issues
+
+#### `ModuleNotFoundError: No module named 'sqlalchemy'`
+This error occurs when you try to run `init_db.py` without installing the required dependencies.
+
+**Solution:**
+```bash
+# Install all dependencies
+pip install -r requirements.txt
+
+# Or install individual packages
+pip install fastapi uvicorn sqlalchemy python-jose[cryptography] passlib[bcrypt] python-multipart
+```
+
+#### Database initialization fails
+If `init_db.py` fails to create tables or add sample data:
+
+1. Check that all dependencies are installed
+2. Ensure you have write permissions in the current directory
+3. Delete the existing database file and try again:
+   ```bash
+   rm employee_management.db
+   python init_db.py
+   ```
+
+#### Import errors when running the application
+Make sure you're running the application from the project root directory and all dependencies are installed.
 
 ## License
 

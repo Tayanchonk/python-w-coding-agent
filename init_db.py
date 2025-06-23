@@ -5,10 +5,19 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy.orm import Session
-from app.database import SessionLocal, engine, Base
-from app.models import User, Position, Employee
-from app.auth import get_password_hash
+try:
+    from sqlalchemy.orm import Session
+    from app.database import SessionLocal, engine, Base
+    from app.models import User, Position, Employee
+    from app.auth import get_password_hash
+except ImportError as e:
+    print("Error: Missing required dependencies!")
+    print(f"Import error: {e}")
+    print("\nPlease install the required dependencies by running:")
+    print("pip install -r requirements.txt")
+    print("\nOr install individual packages:")
+    print("pip install fastapi uvicorn sqlalchemy python-jose[cryptography] passlib[bcrypt] python-multipart")
+    sys.exit(1)
 
 
 def init_db():
