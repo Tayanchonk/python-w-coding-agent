@@ -30,18 +30,17 @@ async def get_employees(
     return employees
 
 
-@router.get("/{emp_id}", response_model=EmployeeResponse, summary="Get employee by ID")
-async def get_employee(
-    emp_id: int,
+@router.get("/{id}", response_model=EmployeeResponse, summary="Get employee by ID")
+async def get_employee_by_id(
+    id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Retrieve a specific employee by their ID.
-    
-    - **emp_id**: The ID of the employee to retrieve
+    Get an employee by ID.
+    - **id**: The ID of the employee to retrieve
     """
-    employee = db.query(Employee).filter(Employee.emp_id == emp_id).first()
+    employee = db.query(Employee).filter(Employee.id == id).first()
     if employee is None:
         raise HTTPException(status_code=404, detail="Employee not found")
     return employee
@@ -62,7 +61,7 @@ async def create_employee(
     """
     # Check if position exists
     from app.models import Position
-    position = db.query(Position).filter(Position.position_id == employee.position_id).first()
+    position = db.query(Position).filter(Position.id == employee.position_id).first()
     if not position:
         raise HTTPException(status_code=404, detail="Position not found")
     
@@ -77,55 +76,40 @@ async def create_employee(
     return db_employee
 
 
-@router.put("/{emp_id}", response_model=EmployeeResponse, summary="Update an employee")
+@router.put("/{id}", response_model=EmployeeResponse, summary="Update an employee")
 async def update_employee(
-    emp_id: int,
-    employee: EmployeeUpdate,
+    id: str,
+    employee_update: EmployeeUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Update an existing employee.
-    
-    - **emp_id**: The ID of the employee to update
-    - **first_name**: Employee's first name
-    - **last_name**: Employee's last name
-    - **position_id**: ID of the position for this employee
+    - **id**: The ID of the employee to update
     """
-    db_employee = db.query(Employee).filter(Employee.emp_id == emp_id).first()
+    db_employee = db.query(Employee).filter(Employee.id == id).first()
     if db_employee is None:
         raise HTTPException(status_code=404, detail="Employee not found")
-    
-    # Check if position exists
-    from app.models import Position
-    position = db.query(Position).filter(Position.position_id == employee.position_id).first()
-    if not position:
-        raise HTTPException(status_code=404, detail="Position not found")
-    
-    db_employee.first_name = employee.first_name
-    db_employee.last_name = employee.last_name
-    db_employee.position_id = employee.position_id
-    
+    for key, value in employee_update.dict(exclude_unset=True).items():
+        setattr(db_employee, key, value)
     db.commit()
     db.refresh(db_employee)
     return db_employee
 
 
-@router.delete("/{emp_id}", summary="Delete an employee")
+@router.delete("/{id}", summary="Delete an employee")
 async def delete_employee(
-    emp_id: int,
+    id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Delete an employee by their ID.
-    
-    - **emp_id**: The ID of the employee to delete
+    Delete an employee by ID.
+    - **id**: The ID of the employee to delete
     """
-    db_employee = db.query(Employee).filter(Employee.emp_id == emp_id).first()
+    db_employee = db.query(Employee).filter(Employee.id == id).first()
     if db_employee is None:
         raise HTTPException(status_code=404, detail="Employee not found")
-    
     db.delete(db_employee)
     db.commit()
     return {"message": "Employee deleted successfully"}

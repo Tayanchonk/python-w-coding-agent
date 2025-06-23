@@ -40,13 +40,13 @@ def init_db():
             User(
                 username="admin",
                 email="admin@company.com",
-                password=get_password_hash("admin123"),
+                password_hash=get_password_hash("admin123"),
                 is_active=True
             ),
             User(
                 username="manager",
                 email="manager@company.com",
-                password=get_password_hash("manager123"),
+                password_hash=get_password_hash("manager123"),
                 is_active=True
             )
         ]
@@ -57,19 +57,19 @@ def init_db():
         # Create sample positions
         sample_positions = [
             Position(
-                position_name="Software Engineer",
+                name="Software Engineer",
                 description="Develops and maintains software applications"
             ),
             Position(
-                position_name="Product Manager",
+                name="Product Manager",
                 description="Manages product development and strategy"
             ),
             Position(
-                position_name="Data Scientist",
+                name="Data Scientist",
                 description="Analyzes data and builds predictive models"
             ),
             Position(
-                position_name="DevOps Engineer",
+                name="DevOps Engineer",
                 description="Manages infrastructure and deployment pipelines"
             )
         ]
