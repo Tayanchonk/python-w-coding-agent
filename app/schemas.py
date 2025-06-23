@@ -1,83 +1,83 @@
 """
-Pydantic schemas for request/response validation
+Legacy Pydantic schemas - now using UUID-based schemas for backward compatibility
 """
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
+import uuid
+from datetime import datetime
 
+# Import the new schemas
+from app.infrastructure.schemas import (
+    UserBase as NewUserBase,
+    UserCreate as NewUserCreate, 
+    UserResponse as NewUserResponse,
+    Token, TokenData, LoginRequest,
+    PositionBase as NewPositionBase,
+    PositionCreate as NewPositionCreate,
+    PositionUpdate as NewPositionUpdate,
+    PositionResponse as NewPositionResponse,
+    EmployeeBase as NewEmployeeBase,
+    EmployeeCreate as NewEmployeeCreate,
+    EmployeeUpdate as NewEmployeeUpdate,
+    EmployeeResponse as NewEmployeeResponse
+)
 
-# User schemas
-class UserBase(BaseModel):
-    username: str
-    email: str
+# Legacy schemas for backward compatibility
+class UserBase(NewUserBase):
+    pass
 
+class UserCreate(NewUserCreate):
+    pass
 
-class UserCreate(UserBase):
-    password: str
-
-
-class UserResponse(UserBase):
-    user_id: int
-    is_active: bool
-
+class UserResponse(NewUserResponse):
+    # Keep legacy field name for compatibility
+    user_id: uuid.UUID = Field(alias="id")
+    
     class Config:
         from_attributes = True
+        allow_population_by_field_name = True
 
+class PositionBase(NewPositionBase):
+    # Map legacy field name
+    position_name: str = Field(alias="name")
+    
+    class Config:
+        allow_population_by_field_name = True
 
-# Authentication schemas
-class Token(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str
+class PositionCreate(NewPositionCreate):
+    position_name: str = Field(alias="name")
+    
+    class Config:
+        allow_population_by_field_name = True
 
+class PositionUpdate(NewPositionUpdate):
+    position_name: str = Field(alias="name")
+    
+    class Config:
+        allow_population_by_field_name = True
 
-class TokenData(BaseModel):
-    username: Optional[str] = None
-
-
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-
-# Position schemas
-class PositionBase(BaseModel):
-    position_name: str
-    description: Optional[str] = None
-
-
-class PositionCreate(PositionBase):
-    pass
-
-
-class PositionUpdate(PositionBase):
-    pass
-
-
-class PositionResponse(PositionBase):
-    position_id: int
-
+class PositionResponse(NewPositionResponse):
+    # Keep legacy field names for compatibility
+    position_id: uuid.UUID = Field(alias="id")
+    position_name: str = Field(alias="name")
+    
     class Config:
         from_attributes = True
+        allow_population_by_field_name = True
 
-
-# Employee schemas
-class EmployeeBase(BaseModel):
-    first_name: str
-    last_name: str
-    position_id: int
-
-
-class EmployeeCreate(EmployeeBase):
+class EmployeeBase(NewEmployeeBase):
     pass
 
-
-class EmployeeUpdate(EmployeeBase):
+class EmployeeCreate(NewEmployeeCreate):
     pass
 
+class EmployeeUpdate(NewEmployeeUpdate):
+    pass
 
-class EmployeeResponse(EmployeeBase):
-    emp_id: int
-    position: Optional[PositionResponse] = None
-
+class EmployeeResponse(NewEmployeeResponse):
+    # Keep legacy field name for compatibility
+    emp_id: uuid.UUID = Field(alias="id")
+    
     class Config:
         from_attributes = True
+        allow_population_by_field_name = True
