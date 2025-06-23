@@ -1,0 +1,28 @@
+[run]
+source = app
+omit = 
+    app/main.py
+    app/auth.py
+    app/employees.py
+    app/positions.py
+    app/database.py
+    app/models.py
+    app/schemas.py
+    app/__init__.py
+    app/*/__init__.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    class .*\bProtocol\):
+    @(abc\.)?abstractmethod
+
+[html]
+directory = htmlcov
