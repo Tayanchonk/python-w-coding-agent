@@ -41,14 +41,14 @@ def setup_database():
     test_user = User(
         username="testuser",
         email="test@example.com",
-        password=get_password_hash("testpass"),
+        password_hash=get_password_hash("testpass"),
         is_active=True
     )
     db.add(test_user)
     
     # Add test position
     test_position = Position(
-        position_name="Test Position",
+        name="Test Position",
         description="A test position"
     )
     db.add(test_position)
@@ -58,7 +58,7 @@ def setup_database():
     test_employee = Employee(
         first_name="Test",
         last_name="Employee",
-        position_id=1
+        position_id=test_position.id
     )
     db.add(test_employee)
     db.commit()
